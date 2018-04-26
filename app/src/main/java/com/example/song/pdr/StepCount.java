@@ -149,7 +149,7 @@ public class StepCount extends StepSensorBase {
         //        } else if (CountTimeState == 2) {
         StepSensorBase.CURRENT_SETP++;
         //            if (stepCallBack != null) {
-        stepCallBack.Step(StepSensorBase.CURRENT_SETP);
+        stepCallBack.Step(StepSensorBase.CURRENT_SETP, 0);
         //            }
         //        }
 

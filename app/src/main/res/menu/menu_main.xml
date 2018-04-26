@@ -3,8 +3,13 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="com.qbates.newguraduationproject.feature.roomList.RoomListActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_clear_point"
         android:orderInCategory="100"
-        android:title="清除"
+        android:title="清除轨迹"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_clear_step_num"
+        android:orderInCategory="100"
+        android:title="清除步数"
         app:showAsAction="never"/>
 </menu>

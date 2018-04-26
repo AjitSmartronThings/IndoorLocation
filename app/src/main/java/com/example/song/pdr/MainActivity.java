@@ -1,11 +1,11 @@
 package com.example.song.pdr;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -22,12 +22,13 @@ public class MainActivity extends AppCompatActivity implements StepSensorBase.St
     private int mStepLen = 50; // 步长
 
     @Override
-    public void Step(int stepNum) {
+    public void Step(int stepNum, float stepLen) {
 
 
         //  计步回调
         mStepText.setText("步数：" + stepNum);
-        mStepView.autoAddPoint(mStepLen);
+        Log.d(TAG, "StepLen: " + stepLen);
+        mStepView.autoAddPoint(stepLen);
     }
 
     @Override
@@ -91,9 +92,12 @@ public class MainActivity extends AppCompatActivity implements StepSensorBase.St
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_clear_point) {
             mStepView.clear();
             return true;
+        }else if(id == R.id.action_clear_step_num){
+            mStepView.clearStepNum();
+            mStepText.setText("步数：0");
         }
         return super.onOptionsItemSelected(item);
     }

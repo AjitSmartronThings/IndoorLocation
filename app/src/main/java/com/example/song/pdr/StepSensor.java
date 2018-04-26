@@ -10,8 +10,6 @@ import android.util.Log;
 import com.example.song.pdr.bean.AccBean;
 
 import java.util.Arrays;
-import java.util.Queue;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Condition;
@@ -79,6 +77,8 @@ public class StepSensor extends StepSensorBase {
         final Object[] accObjectArray = mAccQueue.toArray();
         final AccBean[] accArray = new AccBean[CAPACITY];
         final AccBean[] accPeakArray = new AccBean[CAPACITY / 20];
+
+        int firstPeakIndex = 0;
         int midPeakIndex = 0;
 
         AccBean currentMax = new AccBean();
@@ -98,7 +98,9 @@ public class StepSensor extends StepSensorBase {
 
             if (i % 20 == 0) {
                 currentMax = currentAcc;
-                if (i >= 20 && i < 40) {
+                if (i < 20) {
+                    firstPeakIndex = 0;
+                } else if (i < 40) {
                     midPeakIndex = i;
                 }
                 continue;
@@ -106,25 +108,37 @@ public class StepSensor extends StepSensorBase {
 
             if (currentMax.getAcc() < currentAcc.getAcc()) {
                 currentMax = currentAcc;
-                if (i >= 20 && i < 40) {
+                if (i < 20) {
+                    firstPeakIndex = i;
+                } else if (i < 40) {
                     midPeakIndex = i;
                 }
             }
 
             if (i % 20 == 19) {
-
                 accPeakArray[i / 20] = currentMax;
             }
         }
 
-        step2(accArray, accPeakArray, midPeakIndex);
+        // 寻找第一个峰值到第二个峰值之间的最小值
+        float currentMin = Float.MAX_VALUE;
+        for (int i = firstPeakIndex; i < midPeakIndex; i++) {
+            final AccBean currentAcc = (AccBean) accObjectArray[i];
+            if (currentAcc.getAcc() < currentMin) {
+                currentMin = currentAcc.getAcc();
+            }
+        }
+
+        Log.d(TAG, "minAcc：" + currentMin);
+
+        step2(accArray, accPeakArray, midPeakIndex, (float) (0.56 * Math.pow(Math.abs(accPeakArray[2].getAcc() - currentMin), 0.25)));
     }
 
     /**
      * 第二步
      * 进行连续性,周期性和相似性检查
      */
-    private void step2(AccBean[] accArray, AccBean[] accPeakArray, int midPeakIndex) {
+    private void step2(AccBean[] accArray, AccBean[] accPeakArray, int midPeakIndex, float stepLen) {
         final boolean isStep3Ok = step3(beanArray2AccArray(accArray), midPeakIndex);
         final boolean isStep4Ok = step4(beanArray2TimeArray(accPeakArray));
         final boolean isStep5Ok = step5(beanArray2AccArray(accPeakArray));
@@ -133,7 +147,7 @@ public class StepSensor extends StepSensorBase {
 
         if (isStep3Ok && isStep4Ok && isStep5Ok) {
             StepSensorBase.CURRENT_SETP++;
-            stepCallBack.Step(StepSensorBase.CURRENT_SETP);
+            stepCallBack.Step(StepSensorBase.CURRENT_SETP, stepLen);
         }
     }
 
